@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Site Scraper</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+
+  <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Header -->
+      <header
+        class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+              <path d="M11 8v6" />
+              <path d="M8 11h6" />
+            </svg>
+          </div>
+
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+              Site Scraper
+            </h1>
+            <p class="mt-1 text-sm text-slate-500">
+              Manage and explore your extracted website links.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+          <span class="text-sm font-medium text-slate-600">
+            Scraper Dashboard
+          </span>
+        </div>
+      </header>
+
+      <!-- Search and Actions Card -->
+      <section
+        class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+      >
+        <div class="mb-5">
+          <h2 class="text-lg font-semibold text-slate-900">Manage Links</h2>
+          <p class="mt-1 text-sm text-slate-500">
+            Search through your collected website data.
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <!-- Search Form -->
+          <form method="POST" action="/" class="flex flex-1 gap-2">
+            {% csrf_token %}
+
+            <div class="relative flex-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+
+              <input
+                type="text"
+                name="site"
+                id="site"
+                placeholder="Search by name or address..."
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98]"
+            >
+              Search
+            </button>
+          </form>
+
+          <!-- Delete All Button -->
+          <form method="POST" action="/">
+            {% csrf_token %}
+
+            <a
+              href="delete/"
+              onclick="
+                return confirm(
+                  'Are you sure you want to delete all scraped links?',
+                );
+              "
+              class="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600 transition-all hover:border-red-300 hover:bg-red-100 active:scale-[0.98] sm:w-auto"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="m19 6-1 14H6L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+
+              Delete All
+            </a>
+          </form>
+        </div>
+      </section>
+
+      <!-- Table Card -->
+      <section
+        class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      >
+        <!-- Table Header -->
+        <div
+          class="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">
+              Extracted Links
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              A list of websites collected by your scraper.
+            </p>
+          </div>
+
+          <span
+            class="inline-flex w-fit items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700"
+          >
+            {{ data|length }} Records
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50">
+              <tr>
+                <th
+                  class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                >
+                  #
+                </th>
+
+                <th
+                  class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                >
+                  Link Name
+                </th>
+
+                <th
+                  class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                >
+                  Address
+                </th>
+
+                <th
+                  class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                >
+                  Action
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+              {% for link in data %}
+
+              <tr class="transition-colors duration-150 hover:bg-indigo-50/40">
+                <!-- Number -->
+                <td
+                  class="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-400"
+                >
+                  {{ link.id }}
+                </td>
+
+                <!-- Link Name -->
+                <td class="min-w-48 px-6 py-5">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="17"
+                        height="17"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                        />
+                        <path
+                          d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                        />
+                      </svg>
+                    </div>
+
+                    <span class="text-sm font-semibold text-slate-700">
+                      {{ link.name|default:"Untitled Link" }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Address -->
+                <td class="max-w-md px-6 py-5">
+                  {% if link.address %}
+                  <span
+                    class="block truncate text-sm text-slate-500"
+                    title="{{ link.address }}"
+                  >
+                    {{ link.address }}
+                  </span>
+                  {% else %}
+                  <span class="text-sm italic text-slate-400">
+                    No URL available
+                  </span>
+                  {% endif %}
+                </td>
+
+                <!-- Action -->
+                <td class="whitespace-nowrap px-6 py-5">
+                  {% if link.address %}
+
+                  <a
+                    href="{{ link.address }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 transition-all hover:bg-indigo-600 hover:text-white"
+                  >
+                    Visit Site
+
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M7 17 17 7" />
+                      <path d="M7 7h10v10" />
+                    </svg>
+                  </a>
+
+                  {% else %}
+
+                  <span class="text-xs font-medium text-slate-400">
+                    Unavailable
+                  </span>
+
+                  {% endif %}
+                </td>
+              </tr>
+
+              {% empty %}
+
+              <!-- Empty State -->
+              <tr>
+                <td colspan="4" class="px-6 py-20 text-center">
+                  <div
+                    class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="30"
+                      height="30"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M9 3v18" />
+                      <path d="M14 8h3" />
+                      <path d="M14 12h3" />
+                    </svg>
+                  </div>
+
+                  <h3 class="text-base font-semibold text-slate-700">
+                    No links found
+                  </h3>
+
+                  <p class="mt-1 text-sm text-slate-400">
+                    Your scraped website links will appear here.
+                  </p>
+                </td>
+              </tr>
+
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div
+          class="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p class="text-sm text-slate-500">
+            Showing
+            <span class="font-semibold text-slate-800">{{ data|length }}</span>
+            total links
+          </p>
+
+          <p class="text-xs text-slate-400">Site Scraper Dashboard</p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
